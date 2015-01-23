@@ -1,4 +1,3 @@
-#include "khash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +18,6 @@
 #define QUERY_FIELD_BE 6
 
 
-KHASH_MAP_INIT_INT(64, char)
 void *person_map, *knows_map, *interest_map;
 byteoffset person_length, knows_length, interest_length;
 
@@ -91,12 +89,11 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 	struct Person *person;
 	struct Person *knows;
 	char score;
-	
-	khash_t(64) *person_scores;
-	person_scores = kh_init(64);
-	khiter_t hash_iter;
 
 	int result_length = 0, result_idx, ret;
+
+	// prepare array to hold results
+	struct Result* results = malloc(1000 * sizeof (struct Result));
 
 	printf("Running query %d\n", qid);
 
@@ -104,35 +101,20 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 	for (person_offset = 0; person_offset < person_length; person_offset += sizeof(struct Person)) {
 		person = person_map + person_offset;
 
-		if (person->birthday < bdstart || person->birthday > bdend) {
-			continue;
-		}
-		
+		if (person->birthday < bdstart || person->birthday > bdend) continue; 
+
 		// person must not like artist yet
 		if (likes_artist(person, artist)) continue;
 		// but person must like some of these other guys
 		score = get_score(person, areltd);
-		if (score > 0) {
-			kh_val(person_scores, kh_put(64, person_scores, person_offset, &ret)) = score;
-		}
-	}
+		if (score < 1) continue;
 
-	// prepare array to hold results
-	struct Result* results = malloc(1000 * sizeof (struct Result));
-
-	// scan hash map and find friends
-	for (hash_iter = kh_begin(person_scores); hash_iter != kh_end(person_scores); ++hash_iter) {
-		if (!kh_exist(person_scores, hash_iter)) continue;
-
-		person = person_map + kh_key(person_scores, hash_iter);
-		score = kh_value(person_scores, hash_iter);
-
+		// check if friend lives in same city and likes artist 
 		for (knows_offset = person->knows_first; 
 			knows_offset < person->knows_first + person->knows_n * sizeof(long); 
 			knows_offset += sizeof(long)) {
 			knows = person_map + *((byteoffset *) (knows_map + knows_offset));
 
-			// check if friend lives in same city and likes artist 
 			if (person->location != knows->location) continue; 
 
 			// TODO: realloc if we run out of space in results...
