@@ -54,7 +54,6 @@ void person_field_handler(int col, char* field) {
 void person_line_finisher() {
 	int ret;
 	khiter_t k;
-
 	k = kh_put(64, person_offsets, person_id, &ret);
 	kh_value(person_offsets, k) = person_offset;
 	fwrite(person, sizeof(struct Person), 1, person_out);

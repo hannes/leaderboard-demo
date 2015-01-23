@@ -21,19 +21,15 @@
 void *person_map, *knows_map, *interest_map;
 byteoffset person_length, knows_length, interest_length;
 
-int q_id;
-int q_artist = 0;
-int q_relartists[3] = {0, 0, 0};
-int q_bdaystart = 0;
-int q_bdayend = 0;
+// query variables
+int q_id, q_artist, q_bdaystart, q_bdayend;
+int q_relartists[3];
 
 FILE *outfile;
 
-int result_comparator(const void *v1, const void *v2)
-{
+int result_comparator(const void *v1, const void *v2) {
     struct Result *r1 = (struct Result *) v1;
     struct Result *r2 = (struct Result *) v2;
-    int rc;
     if (r1->score > r2->score)
         return -1;
     else if (r1->score < r2->score)
@@ -90,12 +86,11 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 	struct Person *knows;
 	char score;
 
-	int result_length = 0, result_idx, ret;
-
-	// prepare array to hold results
-	struct Result* results = malloc(1000 * sizeof (struct Result));
+	int result_length = 0, result_idx, ret, result_set_size = 1000;
 
 	printf("Running query %d\n", qid);
+
+	struct Result* results = malloc(result_set_size * sizeof (struct Result));
 
 	// scan people, filter by birthday, calculate scores, add to hash map
 	for (person_offset = 0; person_offset < person_length; person_offset += sizeof(struct Person)) {
@@ -117,9 +112,13 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 
 			if (person->location != knows->location) continue; 
 
-			// TODO: realloc if we run out of space in results...
-			// add to result set
 			if (likes_artist(knows, artist)) {
+				// realloc result array if we run out of space
+				if (result_length >= result_set_size) {
+					result_set_size *= 2;
+					results = realloc(results, result_set_size * sizeof (struct Result));
+				}
+
 				results[result_length].person_id = person->person_id;
 				results[result_length].knows_id = knows->person_id;
 				results[result_length].score = score;
