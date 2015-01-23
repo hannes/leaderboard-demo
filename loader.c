@@ -1,4 +1,3 @@
-#include "khash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +7,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "khash.h"
 #include "utils.h"
 
 #define PERSON_FIELD_ID 0

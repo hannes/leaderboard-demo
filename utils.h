@@ -30,9 +30,11 @@ void parse_csv(char* fname, void (*field_handler)(int, char*), void  (*line_fini
 		exit(-1);
 	}
 	char line[LINEBUFLEN];
+	char *tok;
+
+	int col;
 	while (fgets(line, LINEBUFLEN, stream)) {
-	 	char* tok;
-	    int col = 0;
+	    col = 0;
 		for (tok = strtok(line, "|");
 		        tok && *tok;
 		        tok = strtok(NULL, "|\n")) {

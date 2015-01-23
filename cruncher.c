@@ -100,6 +100,7 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 
 		// person must not like artist yet
 		if (likes_artist(person, artist)) continue;
+		
 		// but person must like some of these other guys
 		score = get_score(person, areltd);
 		if (score < 1) continue;
@@ -190,4 +191,3 @@ int main(int argc, char *argv[]) {
 	parse_csv(argv[2], &query_field_handler, &query_line_finisher);
 	return 0;
 }
-
