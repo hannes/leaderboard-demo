@@ -52,12 +52,45 @@ int result_comparator(const void *v1, const void *v2)
         return 0;
 }
 
+short get_score(struct Person *person, int areltd[]) {
+	byteoffset interest_offset;
+	long interest;
+	short score = 0;
+	for (interest_offset = person->interests_first; 
+		interest_offset < person->interests_first + person->interest_n * sizeof(long); 
+		interest_offset += sizeof(long)) {
+
+		interest = *((long *) (interest_map + interest_offset));
+		if (areltd[0] == interest) score++;
+		if (areltd[1] == interest) score++;
+		if (areltd[2] == interest) score++;
+	}
+	return score;
+}
+
+char likes_artist(struct Person *person, int artist) {
+	byteoffset interest_offset;
+	long interest;
+	short likesartist = 0;
+
+	for (interest_offset = person->interests_first; 
+		interest_offset < person->interests_first + person->interest_n * sizeof(long); 
+		interest_offset += sizeof(long)) {
+
+		interest = *((long *) (interest_map + interest_offset));
+		if (interest == artist) {
+			likesartist = 1;
+			break;
+		}
+	}
+	return likesartist;
+}
+
 void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 	byteoffset person_offset, interest_offset, knows_offset;
 	struct Person *person;
 	struct Person *knows;
-	char score, likesartist;
-	long interest;
+	char score;
 	
 	khash_t(64) *person_scores;
 	person_scores = kh_init(64);
@@ -75,16 +108,10 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 			continue;
 		}
 		
-		score = 0;
-		for (interest_offset = person->interests_first; 
-			interest_offset < person->interests_first + person->interest_n * sizeof(long); 
-			interest_offset += sizeof(long)) {
-
-			interest = *((long *) (interest_map + interest_offset));
-			if (areltd[0] == interest) score++;
-			if (areltd[1] == interest) score++;
-			if (areltd[2] == interest) score++;
-		}
+		// person must not like artist yet
+		if (likes_artist(person, artist)) continue;
+		// but person must like some of these other guys
+		score = get_score(person, areltd);
 		if (score > 0) {
 			kh_val(person_scores, kh_put(64, person_scores, person_offset, &ret)) = score;
 		}
@@ -108,20 +135,9 @@ void query(int qid, int artist, int areltd[], int bdstart, int bdend) {
 			// check if friend lives in same city and likes artist 
 			if (person->location != knows->location) continue; 
 
-			likesartist = 0;
-			for (interest_offset = knows->interests_first; 
-				interest_offset < knows->interests_first + knows->interest_n * sizeof(long); 
-				interest_offset += sizeof(long)) {
-
-				interest = *((long *) (interest_map + interest_offset));
-				if (interest == artist) {
-					likesartist = 1;
-					break;
-				}
-			}
 			// TODO: realloc if we run out of space in results...
 			// add to result set
-			if (likesartist) {
+			if (likes_artist(knows, artist)) {
 				results[result_length].person_id = person->person_id;
 				results[result_length].knows_id = knows->person_id;
 				results[result_length].score = score;
@@ -179,9 +195,9 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	/* memory-map files created by loader */
-	person_map =   mmapr(makepath(argv[1], "person",   "bin"), &person_length);
-	interest_map =    mmapr(makepath(argv[1], "interest", "bin"), &knows_length);
-	knows_map = mmapr(makepath(argv[1], "knows",    "bin"), &interest_length);
+	person_map   = mmapr(makepath(argv[1], "person",   "bin"), &person_length);
+	interest_map = mmapr(makepath(argv[1], "interest", "bin"), &knows_length);
+	knows_map    = mmapr(makepath(argv[1], "knows",    "bin"), &interest_length);
 
   	outfile = fopen(argv[3], "w");  
   	if (outfile == NULL) {
