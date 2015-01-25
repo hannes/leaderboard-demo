@@ -1,10 +1,10 @@
 all: cruncher loader
 
-cruncher: cruncher.c
+cruncher: cruncher.c utils.h
 	gcc -I. -O3 -o cruncher cruncher.c 
 
-loader: loader.c
+loader: loader.c utils.h
 	gcc -I. -O3 -o loader loader.c 
 
 clean:
-	rm loader cruncher
+	rm -f loader cruncher

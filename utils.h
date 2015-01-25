@@ -10,7 +10,7 @@ typedef struct {
 	unsigned short location;
 	unsigned long knows_first;
 	unsigned short knows_n;
-	unsigned int interests_first; // interests fit in uint
+	unsigned long interests_first;
 	unsigned short interest_n;
 } Person;
 
@@ -76,9 +76,7 @@ unsigned short birthday_to_short(char* date) {
 	dmbuf[2] = '\0';
 	dmbuf[0] = *(date + 5);
 	dmbuf[1] = *(date + 6);
-	//memcpy(dmbuf, date + 5, 2);
 	bdaysht = atoi(dmbuf) * 100;
-	//memcpy(dmbuf, date + 8, 2);
 	dmbuf[0] = *(date + 8);
 	dmbuf[1] = *(date + 9);
 	bdaysht += atoi(dmbuf);

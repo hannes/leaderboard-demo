@@ -78,8 +78,7 @@ void knows_line_handler(unsigned char nfields, char** tokens) {
 }
 
 void interest_line_handler(unsigned char nfields, char** tokens) {
-	// interest ids are small enough for usht
-	unsigned short interest_id = 0;
+	unsigned int interest_id = 0;
 	person_id = atol(tokens[INTEREST_FIELD_PERSON]);
 	interest_id = atoi(tokens[INTEREST_FIELD_INTEREST]);
 	if (person_id != person_id_prev) {
@@ -87,7 +86,7 @@ void interest_line_handler(unsigned char nfields, char** tokens) {
 		person->interests_first = interest_offset;
 		person->interest_n = 0;
 	}
-	fwrite(&interest_id, sizeof(unsigned short), 1, interest_out);
+	fwrite(&interest_id, sizeof(unsigned int), 1, interest_out);
 	interest_offset++;
 	person->interest_n++;
 }

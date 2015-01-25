@@ -19,7 +19,7 @@
 
 Person *person_map;
 unsigned int *knows_map;
-unsigned short *interest_map;
+unsigned int *interest_map;
 
 unsigned long person_length, knows_length, interest_length;
 
@@ -44,9 +44,9 @@ int result_comparator(const void *v1, const void *v2) {
         return 0;
 }
 
-unsigned char get_score(Person *person, unsigned short areltd[]) {
+unsigned char get_score(Person *person, unsigned int areltd[]) {
 	long interest_offset;
-	unsigned short interest;
+	unsigned int interest;
 	unsigned char score = 0;
 	for (interest_offset = person->interests_first; 
 		interest_offset < person->interests_first + person->interest_n; 
@@ -60,10 +60,10 @@ unsigned char get_score(Person *person, unsigned short areltd[]) {
 	return score;
 }
 
-char likes_artist(Person *person, unsigned short artist) {
+char likes_artist(Person *person, unsigned int artist) {
 	long interest_offset;
-	unsigned short interest;
-	unsigned short likesartist = 0;
+	unsigned int interest;
+	unsigned char likesartist = 0;
 
 	for (interest_offset = person->interests_first; 
 		interest_offset < person->interests_first + person->interest_n; 
@@ -78,7 +78,7 @@ char likes_artist(Person *person, unsigned short artist) {
 	return likesartist;
 }
 
-void query(unsigned short qid, unsigned short artist, unsigned short areltd[], unsigned short bdstart, unsigned short bdend) {
+void query(unsigned int qid, unsigned int artist, unsigned int areltd[], unsigned short bdstart, unsigned short bdend) {
 	unsigned int person_offset;
 	unsigned long knows_offset;
 
@@ -136,8 +136,9 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 }
 
 void query_line_handler(unsigned char nfields, char** tokens) {
-	unsigned short q_id, q_artist, q_bdaystart, q_bdayend;
-	unsigned short q_relartists[3];
+	unsigned int q_id, q_artist;
+	unsigned int q_relartists[3];
+	unsigned short q_bdaystart, q_bdayend;
 
 	q_id            = atoi(tokens[QUERY_FIELD_QID]);
 	q_artist        = atoi(tokens[QUERY_FIELD_A1]);
@@ -156,9 +157,9 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	/* memory-map files created by loader */
-	person_map   = (Person *) mmapr(makepath(argv[1], "person",   "bin"), &person_length);
-	interest_map = (unsigned short *) mmapr(makepath(argv[1], "interest", "bin"), &knows_length);
-	knows_map    = (unsigned int *) mmapr(makepath(argv[1], "knows",    "bin"), &interest_length);
+	person_map   = (Person *)       mmapr(makepath(argv[1], "person",   "bin"), &person_length);
+	interest_map = (unsigned int *) mmapr(makepath(argv[1], "interest", "bin"), &interest_length);
+	knows_map    = (unsigned int *) mmapr(makepath(argv[1], "knows",    "bin"), &knows_length);
 
   	outfile = fopen(argv[3], "w");  
   	if (outfile == NULL) {
@@ -169,10 +170,4 @@ int main(int argc, char *argv[]) {
   	/* run through queries */
 	parse_csv(argv[2], &query_line_handler);
 	return 0;
-
-	/*	unsigned int pidx;
-	for (pidx =0; pidx < person_offset; pidx++) {
-		person = &person_map[pidx];
-		printf("%lu\t%d\t%d\t\t%lu\t%d\t%d\t%d\n", person->person_id, person->birthday, person->location, person->knows_first, person->knows_n, person->interests_first, person->interest_n);
-	}*/
 }
