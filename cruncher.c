@@ -93,6 +93,10 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 	for (person_offset = 0; person_offset < person_length/sizeof(Person); person_offset++) {
 		person = &person_map[person_offset];
 
+		if (person_offset > 0 && person_offset % REPORTING_N == 0) {
+			printf("%.2f%%\n", 100 * (person_offset * 1.0/(person_length/sizeof(Person))));
+		}
+
 		if (person->birthday < bdstart || person->birthday > bdend) continue; 
 
 		// person must not like artist yet
@@ -156,9 +160,9 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	/* memory-map files created by loader */
-	person_map   = (Person *)       mmapr(makepath(argv[1], "person",   "bin"), &person_length);
+	person_map   = (Person *)         mmapr(makepath(argv[1], "person",   "bin"), &person_length);
 	interest_map = (unsigned short *) mmapr(makepath(argv[1], "interest", "bin"), &interest_length);
-	knows_map    = (unsigned int *) mmapr(makepath(argv[1], "knows",    "bin"), &knows_length);
+	knows_map    = (unsigned int *)   mmapr(makepath(argv[1], "knows",    "bin"), &knows_length);
 
   	outfile = fopen(argv[3], "w");  
   	if (outfile == NULL) {
