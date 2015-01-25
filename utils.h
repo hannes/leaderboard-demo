@@ -4,24 +4,23 @@
 typedef unsigned long byteoffset;
 typedef unsigned int  entrycount;
 
-struct Person {
-	long person_id;
-	long linenum;
-	short birthday;
-	long location;
-	byteoffset knows_first;
-	entrycount knows_n;
-	byteoffset interests_first;
-	entrycount interest_n;
-};
+typedef struct {
+	unsigned long person_id;
+	unsigned short birthday;
+	unsigned short location;
+	unsigned long knows_first;
+	unsigned short knows_n;
+	unsigned int interests_first; // interests fit in uint
+	unsigned short interest_n;
+} Person;
 
-struct Result { 
-    long person_id;
-    long knows_id;
-    short score;
-};
+typedef struct { 
+    unsigned long person_id;
+    unsigned long knows_id;
+    unsigned char score;
+} Result;
 
-void parse_csv(char* fname, void (*field_handler)(int, char*), void  (*line_finisher)()) {
+void parse_csv(char* fname, void (*line_handler)(unsigned char nfields, char** fieldvals)) {
 	long nlines = 0;
 
    	FILE* stream = fopen(fname, "r");
@@ -30,18 +29,24 @@ void parse_csv(char* fname, void (*field_handler)(int, char*), void  (*line_fini
 		exit(-1);
 	}
 	char line[LINEBUFLEN];
-	char *tok;
+	char* tokens[10];
+	unsigned int col, idx;
+	tokens[0] = line;
 
-	int col;
 	while (fgets(line, LINEBUFLEN, stream)) {
-	    col = 0;
-		for (tok = strtok(line, "|");
-		        tok && *tok;
-		        tok = strtok(NULL, "|\n")) {
-			(*field_handler)(col, tok);
-			col++;
+		col = 0;
+		// parse the csv line into array of strings
+		for (idx=0; idx<LINEBUFLEN; idx++) { 
+			if (line[idx] == '|' || line[idx] == '\n') {
+				line[idx] = '\0';
+				col++;
+				tokens[col] = &line[idx+1];
+			} // lookahead to find end of line
+			if (line[idx+1] == '\0') {
+				break;
+			}
 		}
-		(*line_finisher)();
+		(*line_handler)(col, tokens);
 		nlines++;
 		if (nlines % REPORTING_N == 0) {
 			printf("%s: read %lu lines\n", fname, nlines);
@@ -65,13 +70,17 @@ FILE* open_binout(char* filename) {
 	convert birthday from date to four-digit integer with month and day 
 	easier comparisions and less storage space
 */
-short birthday_to_short(char* date) {
-	short bdaysht;
+unsigned short birthday_to_short(char* date) {
+	unsigned short bdaysht;
 	char dmbuf[3];
 	dmbuf[2] = '\0';
-	memcpy(dmbuf, date + 5, 2);
+	dmbuf[0] = *(date + 5);
+	dmbuf[1] = *(date + 6);
+	//memcpy(dmbuf, date + 5, 2);
 	bdaysht = atoi(dmbuf) * 100;
-	memcpy(dmbuf, date + 8, 2);
+	//memcpy(dmbuf, date + 8, 2);
+	dmbuf[0] = *(date + 8);
+	dmbuf[1] = *(date + 9);
 	bdaysht += atoi(dmbuf);
 	return bdaysht;
 }
