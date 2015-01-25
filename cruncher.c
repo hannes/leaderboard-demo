@@ -19,7 +19,7 @@
 
 Person *person_map;
 unsigned int *knows_map;
-unsigned int *interest_map;
+unsigned short *interest_map;
 
 unsigned long person_length, knows_length, interest_length;
 
@@ -44,9 +44,9 @@ int result_comparator(const void *v1, const void *v2) {
         return 0;
 }
 
-unsigned char get_score(Person *person, unsigned int areltd[]) {
+unsigned char get_score(Person *person, unsigned short areltd[]) {
 	long interest_offset;
-	unsigned int interest;
+	unsigned short interest;
 	unsigned char score = 0;
 	for (interest_offset = person->interests_first; 
 		interest_offset < person->interests_first + person->interest_n; 
@@ -60,10 +60,10 @@ unsigned char get_score(Person *person, unsigned int areltd[]) {
 	return score;
 }
 
-char likes_artist(Person *person, unsigned int artist) {
+char likes_artist(Person *person, unsigned short artist) {
 	long interest_offset;
-	unsigned int interest;
-	unsigned char likesartist = 0;
+	unsigned short interest;
+	unsigned short likesartist = 0;
 
 	for (interest_offset = person->interests_first; 
 		interest_offset < person->interests_first + person->interest_n; 
@@ -78,7 +78,7 @@ char likes_artist(Person *person, unsigned int artist) {
 	return likesartist;
 }
 
-void query(unsigned int qid, unsigned int artist, unsigned int areltd[], unsigned short bdstart, unsigned short bdend) {
+void query(unsigned short qid, unsigned short artist, unsigned short areltd[], unsigned short bdstart, unsigned short bdend) {
 	unsigned int person_offset;
 	unsigned long knows_offset;
 
@@ -136,9 +136,8 @@ void query(unsigned int qid, unsigned int artist, unsigned int areltd[], unsigne
 }
 
 void query_line_handler(unsigned char nfields, char** tokens) {
-	unsigned int q_id, q_artist;
-	unsigned int q_relartists[3];
-	unsigned short q_bdaystart, q_bdayend;
+	unsigned short q_id, q_artist, q_bdaystart, q_bdayend;
+	unsigned short q_relartists[3];
 
 	q_id            = atoi(tokens[QUERY_FIELD_QID]);
 	q_artist        = atoi(tokens[QUERY_FIELD_A1]);
@@ -158,7 +157,7 @@ int main(int argc, char *argv[]) {
 	}
 	/* memory-map files created by loader */
 	person_map   = (Person *)       mmapr(makepath(argv[1], "person",   "bin"), &person_length);
-	interest_map = (unsigned int *) mmapr(makepath(argv[1], "interest", "bin"), &interest_length);
+	interest_map = (unsigned short *) mmapr(makepath(argv[1], "interest", "bin"), &interest_length);
 	knows_map    = (unsigned int *) mmapr(makepath(argv[1], "knows",    "bin"), &knows_length);
 
   	outfile = fopen(argv[3], "w");  

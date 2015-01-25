@@ -5,19 +5,19 @@ typedef unsigned long byteoffset;
 typedef unsigned int  entrycount;
 
 typedef struct {
-	unsigned long person_id;
+	unsigned long  person_id;
 	unsigned short birthday;
 	unsigned short location;
-	unsigned long knows_first;
-	unsigned short knows_n;
-	unsigned long interests_first;
-	unsigned short interest_n;
+	unsigned long  knows_first;
+	unsigned short   knows_n;
+	unsigned long  interests_first;
+	unsigned short   interest_n;
 } Person;
 
 typedef struct { 
-    unsigned long person_id;
-    unsigned long knows_id;
-    unsigned char score;
+    unsigned long  person_id;
+    unsigned long  knows_id;
+    unsigned char  score;
 } Result;
 
 void parse_csv(char* fname, void (*line_handler)(unsigned char nfields, char** fieldvals)) {

@@ -22,9 +22,9 @@
 KHASH_MAP_INIT_INT64(pht, unsigned int)
 khash_t(pht) *person_offsets;
 
-FILE * person_out;
-FILE * interest_out;
-FILE * knows_out;
+FILE   *person_out;
+FILE   *interest_out;
+FILE   *knows_out;
 Person *person_map;
 Person *person;
 
@@ -78,7 +78,7 @@ void knows_line_handler(unsigned char nfields, char** tokens) {
 }
 
 void interest_line_handler(unsigned char nfields, char** tokens) {
-	unsigned int interest_id = 0;
+	unsigned short interest_id;
 	person_id = atol(tokens[INTEREST_FIELD_PERSON]);
 	interest_id = atoi(tokens[INTEREST_FIELD_INTEREST]);
 	if (person_id != person_id_prev) {
@@ -86,7 +86,7 @@ void interest_line_handler(unsigned char nfields, char** tokens) {
 		person->interests_first = interest_offset;
 		person->interest_n = 0;
 	}
-	fwrite(&interest_id, sizeof(unsigned int), 1, interest_out);
+	fwrite(&interest_id, sizeof(unsigned short), 1, interest_out);
 	interest_offset++;
 	person->interest_n++;
 }
@@ -103,8 +103,6 @@ int main(int argc, char *argv[]) {
 	int person_map_fd;
 	struct stat st;
 
-	person = malloc(sizeof(Person));
-
 	if (argc < 3) {
 		fprintf(stderr, "Usage: [csv input path] [output path]\n");
 		exit(-1);
@@ -117,10 +115,10 @@ int main(int argc, char *argv[]) {
     	}
 	}	
 
-	// init hashmap for persons
-	person_offsets = kh_init(pht);
-
 	// first pass person, parse person, write to binary and store bin offset in hash table
+	person_offsets = kh_init(pht);	
+	person = malloc(sizeof(Person));
+	person->interest_n = person->knows_n = 0;
 	person_out = open_binout(person_output_file);
 	parse_csv(person_input_file, &person_line_handler);
 
