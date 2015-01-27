@@ -10,4 +10,4 @@ reorg: reorg.c utils.h
 	gcc -I. -O3 -o reorg reorg.c 
 
 clean:
-	rm -f loader cruncher
+	rm -f loader cruncher reorg
