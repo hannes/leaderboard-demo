@@ -4,14 +4,17 @@
 typedef unsigned long byteoffset;
 typedef unsigned int  entrycount;
 
+typedef unsigned char bool;
+
+
 typedef struct {
 	unsigned long  person_id;
 	unsigned short birthday;
 	unsigned short location;
 	unsigned long  knows_first;
-	unsigned short   knows_n;
+	unsigned short knows_n;
 	unsigned long  interests_first;
-	unsigned short   interest_n;
+	unsigned short interest_n;
 } Person;
 
 typedef struct { 
@@ -83,13 +86,14 @@ unsigned short birthday_to_short(char* date) {
 	return bdaysht;
 }
 
-
-void* mmapr(char* filename, byteoffset *filelen) {
+void* mmapopen(char* filename, byteoffset *filelen, bool write) {
 	int fd;
 	struct stat sbuf;
 	void *mapaddr;
+	int fopenmode = write ? O_RDWR : O_RDONLY;
+	int mmapmode = write ? PROT_WRITE : PROT_READ;
 
-	if ((fd = open(filename, O_RDONLY)) == -1) {
+	if ((fd = open(filename, fopenmode)) == -1) {
 		fprintf(stderr, "failed to open %s\n", filename);
 		exit(1);
     }
@@ -99,13 +103,21 @@ void* mmapr(char* filename, byteoffset *filelen) {
         exit(1);
     }
     
-    mapaddr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    mapaddr = mmap(0, sbuf.st_size, mmapmode, MAP_SHARED, fd, 0);
     if (mapaddr == MAP_FAILED) {
         fprintf(stderr, "failed to mmap %s\n", filename);
         exit(1);
     }
     *filelen = sbuf.st_size;
     return mapaddr;
+}
+
+void* mmapr(char* filename, byteoffset *filelen) {
+	return mmapopen(filename, filelen, 0);
+}
+
+void* mmaprw(char* filename, byteoffset *filelen) {
+	return mmapopen(filename, filelen, 1);
 }
 
 char* makepath(char* dir, char* file, char* ext) {

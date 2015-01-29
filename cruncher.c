@@ -56,6 +56,10 @@ unsigned char get_score(Person *person, unsigned short areltd[]) {
 		if (areltd[0] == interest) score++;
 		if (areltd[1] == interest) score++;
 		if (areltd[2] == interest) score++;
+		// early exit
+		if (score > 2) {
+			break;
+		}
 	}
 	return score;
 }
@@ -89,7 +93,7 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 	Result* results = malloc(result_set_size * sizeof (Result));
 	printf("Running query %d\n", qid);
 
-	// scan people, filter by birthday, calculate scores, add to hash map
+	// scan people, filter by birthday, calculate scores
 	for (person_offset = 0; person_offset < person_length/sizeof(Person); person_offset++) {
 		person = &person_map[person_offset];
 
