@@ -1,5 +1,5 @@
 # remove the # in the following line to enable reorg compilation (and running)
-all: cruncher loader # reorg
+all: cruncher # reorg
 
 cruncher: cruncher.c utils.h
 	gcc -I. -O3 -o cruncher cruncher.c 
