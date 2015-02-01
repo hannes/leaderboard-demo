@@ -84,7 +84,7 @@ char likes_artist(Person *person, unsigned short artist) {
 
 void query(unsigned short qid, unsigned short artist, unsigned short areltd[], unsigned short bdstart, unsigned short bdend) {
 	unsigned int person_offset;
-	unsigned long knows_offset;
+	unsigned long knows_offset, knows_offset2;
 
 	Person *person, *knows;
 	unsigned char score;
@@ -93,14 +93,13 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 	Result* results = malloc(result_set_size * sizeof (Result));
 	printf("Running query %d\n", qid);
 
-	// scan people, filter by birthday, calculate scores
 	for (person_offset = 0; person_offset < person_length/sizeof(Person); person_offset++) {
 		person = &person_map[person_offset];
 
 		if (person_offset > 0 && person_offset % REPORTING_N == 0) {
 			printf("%.2f%%\n", 100 * (person_offset * 1.0/(person_length/sizeof(Person))));
 		}
-
+		// filter by birthday
 		if (person->birthday < bdstart || person->birthday > bdend) continue; 
 
 		// person must not like artist yet
@@ -117,18 +116,27 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 
 			knows = &person_map[knows_map[knows_offset]];
 			if (person->location != knows->location) continue; 
-			if (likes_artist(knows, artist)) {
 
-				// realloc result array if we run out of space
-				if (result_length >= result_set_size) {
-					result_set_size *= 2;
-					results = realloc(results, result_set_size * sizeof (Result));
+			// friend must already like the artist
+			if (!likes_artist(knows, artist)) continue;
+
+			// friendship must be mutual
+			for (knows_offset2 = knows->knows_first;
+				knows_offset2 < knows->knows_first + knows->knows_n;
+				knows_offset2++) {
+			
+				if (knows_map[knows_offset2] == person_offset) {
+					// realloc result array if we run out of space
+					if (result_length >= result_set_size) {
+						result_set_size *= 2;
+						results = realloc(results, result_set_size * sizeof (Result));
+					}
+					results[result_length].person_id = person->person_id;
+					results[result_length].knows_id = knows->person_id;
+					results[result_length].score = score;
+					result_length++;
+					break;
 				}
-
-				results[result_length].person_id = person->person_id;
-				results[result_length].knows_id = knows->person_id;
-				results[result_length].score = score;
-				result_length++;
 			}
 		}
 	}
