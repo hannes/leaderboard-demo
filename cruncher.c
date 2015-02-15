@@ -45,7 +45,7 @@ int result_comparator(const void *v1, const void *v2) {
 }
 
 unsigned char get_score(Person *person, unsigned short areltd[]) {
-	long interest_offset;
+	unsigned short interest_offset;
 	unsigned short interest;
 	unsigned char score = 0;
 	for (interest_offset = person->interests_first; 
@@ -65,7 +65,7 @@ unsigned char get_score(Person *person, unsigned short areltd[]) {
 }
 
 char likes_artist(Person *person, unsigned short artist) {
-	long interest_offset;
+	unsigned short interest_offset;
 	unsigned short interest;
 	unsigned short likesartist = 0;
 
