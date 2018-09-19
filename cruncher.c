@@ -99,15 +99,12 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 		if (person_offset > 0 && person_offset % REPORTING_N == 0) {
 			printf("%.2f%%\n", 100 * (person_offset * 1.0/(person_length/sizeof(Person))));
 		}
-		// filter by birthday
-		if (person->birthday < bdstart || person->birthday > bdend) continue; 
+		// person must like some of these other guys
+		score = get_score(person, areltd);
+		if (score < 1) continue;
 
 		// person must not like artist yet
 		if (likes_artist(person, artist)) continue;
-
-		// but person must like some of these other guys
-		score = get_score(person, areltd);
-		if (score < 1) continue;
 
 		// check if friend lives in same city and likes artist 
 		for (knows_offset = person->knows_first; 
@@ -126,6 +123,9 @@ void query(unsigned short qid, unsigned short artist, unsigned short areltd[], u
 				knows_offset2++) {
 			
 				if (knows_map[knows_offset2] == person_offset) {
+					// filter by birthday
+					if (person->birthday < bdstart || person->birthday > bdend) continue; 
+
 					// realloc result array if we run out of space
 					if (result_length >= result_set_size) {
 						result_set_size *= 2;
